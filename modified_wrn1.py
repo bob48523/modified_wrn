@@ -177,61 +177,38 @@ class ResNet(nn.Module):
     def __init__(self, block, num_blocks, num_classes=10):
         super(ResNet, self).__init__()
         self.in_planes = 64
-        #block_in_planes = [64, 64*4+64, 128*4+64*4*64, 256*4+128*4+64*4*64]
-        self.last_in_planes = 64
-
+        
         self.conv1 = conv3x3(3,64)
         self.bn1 = nn.BatchNorm2d(64)
         
         self.layer1 = self._make_layer(block, 64, num_blocks[0], stride=1)
-        self.shortcut1 = nn.Sequential()
-
         self.layer2 = self._make_layer(block, 128, num_blocks[1], stride=2)
-        self.shortcut2 = nn.Sequential(
-            nn.Conv2d(64+64*block.expansion,64+64*block.expansion, kernel_size=1, stride=2, bias=False)
-        )
-
         self.layer3 = self._make_layer(block, 256, num_blocks[2], stride=2)
-        self.shortcut3 = nn.Sequential(
-            nn.Conv2d(64+192*block.expansion,64+192*block.expansion, kernel_size=1, stride=2, bias=False)
-        )
 
         #self.layer4 = self._make_layer(block, 512, num_blocks[3], stride=2)
         #self.linear = nn.Linear(512*block.expansion, num_classes)
-        self.layer5 = Inception(64+448*block.expansion,768, 384, 768, 96, 256, 256)
-        #self.layer6 = Inception(1024, 512, 256, 512, 72, 192, 192)
-        self.linear = nn.Linear(2048, 10)
+        self.layer5 = Inception(256*block.expansion,384, 192, 384, 48, 128, 128)
+        self.layer6 = Inception(1024, 384, 192, 384, 48, 128, 128)
+        self.linear = nn.Linear(1024, 10)
         
 
     def _make_layer(self, block, planes, num_blocks, stride):
         strides = [stride] + [1]*(num_blocks-1)
         layers = []
-        self.last_in_planes = self.in_planes
         for stride in strides:
             layers.append(block(self.in_planes, planes, stride))
             self.in_planes = planes * block.expansion
-        self.in_planes += self.last_in_planes 
         return nn.Sequential(*layers)
 
-    def _make_layer_inception(self, planes, num_blocks, stride):
-        strides = [stride] + [1]*(num_blocks-1)
-        layers = []
-        for stride in strides:
-            layers.append(block(self.in_planes, planes, stride))
-            self.in_planes = planes * block.expansion
-        return nn.Sequential(*layers)
 
     def forward(self, x):
-        out1 = F.relu(self.bn1(self.conv1(x)))
-        out2 = self.layer1(out1)
-        out3 = torch.cat((out2, out1),1)
-        out4 = self.layer2(out3)
-        out5 = torch.cat((out4, self.shortcut2(out3)),1)
-        out6 = self.layer3(out5)
-        out7 = torch.cat((out6, self.shortcut3(out5)),1)
+        out = F.relu(self.bn1(self.conv1(x)))
+        out = self.layer1(out)
+        out = self.layer2(out)
+        out = self.layer3(out)
         #out = self.layer4(out)
-        out = self.layer5(out7)
-        #out = self.layer6(out)
+        out = self.layer5(out)
+        out = self.layer6(out)
         out = F.avg_pool2d(out, 8)
         out = out.view(out.size(0), -1)
         out = self.linear(out)
