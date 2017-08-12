@@ -134,7 +134,7 @@ class Cifar10_net(nn.Module):
         out = self.fc(out)
         return out
 
-def cifar10Net26():
+def Modified_WRN():
     return Cifar10_net(Inception, [3,4,6], 0.5, 10)
 
 

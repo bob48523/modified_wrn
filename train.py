@@ -24,9 +24,10 @@ import shutil
 
 import setproctitle
 
-import densenet
 import make_graph
-import resnet
+#import modified_wrn1 as modified_wrn
+import modified_wrn2 as modified_wrn
+#import modified_wrn3 as modified_wrn
 
 def main():
     parser = argparse.ArgumentParser()
@@ -40,7 +41,7 @@ def main():
     args = parser.parse_args()
 
     args.cuda = not args.no_cuda and torch.cuda.is_available()
-    args.save = args.save or 'work/densenet.base3'
+    args.save = args.save or 'work/densenet.base1'
     setproctitle.setproctitle(args.save)
 
     torch.manual_seed(args.seed)
@@ -78,7 +79,8 @@ def main():
 
     #net = densenet.DenseNet(growthRate=12, depth=40, reduction=0.5,
     #                        bottleneck=True, nClasses=10)
-    net = resnet.ResNet50()
+    net = modified_wrn.Modified_WRN()
+    #net = resnet.ResNet50()
     print('  + Number of params: {}'.format(
         sum([p.data.nelement() for p in net.parameters()])))
     if args.cuda:
