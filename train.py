@@ -28,6 +28,7 @@ import make_graph
 #import modified_wrn1 as modified_wrn
 import modified_wrn2 as modified_wrn
 #import modified_wrn3 as modified_wrn
+import CalculateFlops
 
 def main():
     parser = argparse.ArgumentParser()
@@ -83,6 +84,9 @@ def main():
     #net = resnet.ResNet50()
     print('  + Number of params: {}'.format(
         sum([p.data.nelement() for p in net.parameters()])))
+    print('  + Flops: {}'.format(
+        CalculateFlops.calculate_flops(net.children())))
+
     if args.cuda:
         net = net.cuda()
         net = torch.nn.DataParallel(net, device_ids=range(torch.cuda.device_count()))
