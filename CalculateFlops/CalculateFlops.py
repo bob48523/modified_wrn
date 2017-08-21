@@ -1,0 +1,3 @@
+import densenet
+
+densenet.CalcuFlops()
