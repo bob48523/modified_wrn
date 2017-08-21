@@ -69,9 +69,9 @@ class mask_1(nn.Module):
         self.skip_1 = PreActBottleneck(planes*4, planes)
         self.skip_2 = PreActBottleneck(planes*4, planes)
         
-        self.bn1 = nn.BatchNorm2d(planes*4)
+        #self.bn1 = nn.BatchNorm2d(planes*4)
         self.conv1 = nn.Conv2d(planes*4, planes*4, kernel_size=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(planes*4)
+        #self.bn2 = nn.BatchNorm2d(planes*4)
         self.conv2 = nn.Conv2d(planes*4, planes*4, kernel_size=1, bias=False)
 
     def forward(self, x):
@@ -86,8 +86,8 @@ class mask_1(nn.Module):
         out8 = out7+self.skip_2(out1)
         out9 = self.interp3(self.res5(out8))
         out10 = self.res6_2(self.res6_1(out9))
-        out = self.conv1(F.relu(self.bn1(out10)))
-        out = self.conv2(F.relu(self.bn2(out)))
+        out = F.relu(self.conv1(out10))
+        out = F.sigmoid(self.conv2(out))
         return out10
 
 class mask_2(nn.Module):
@@ -107,9 +107,9 @@ class mask_2(nn.Module):
         
         self.skip_1 = PreActBottleneck(planes*4, planes)
         
-        self.bn1 = nn.BatchNorm2d(planes*4)
+        #self.bn1 = nn.BatchNorm2d(planes*4)
         self.conv1 = nn.Conv2d(planes*4, planes*4, kernel_size=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(planes*4)
+        #self.bn2 = nn.BatchNorm2d(planes*4)
         self.conv2 = nn.Conv2d(planes*4, planes*4, kernel_size=1, bias=False)
 
     def forward(self, x):
@@ -122,8 +122,10 @@ class mask_2(nn.Module):
         out6 = self.interp2(self.res3(out5))
         out7 = self.res4_2(self.res4_1(out6))
 
-        out = self.conv1(F.relu(self.bn1(out7)))
-        out = self.conv2(F.relu(self.bn2(out)))
+        #out = self.conv1(F.relu(self.bn1(out7)))
+        #out = self.conv2(F.relu(self.bn2(out)))
+        out = F.relu(self.conv1(out7))
+        out = F.sigmoid(self.conv2(out))
         return out
 
 class mask_3(nn.Module):
@@ -137,16 +139,18 @@ class mask_3(nn.Module):
         self.res2_1 = PreActBottleneck(planes*4, planes)
         self.res2_2 = PreActBottleneck(planes*4, planes)
 
-        self.bn1 = nn.BatchNorm2d(planes*4)
+        #self.bn1 = nn.BatchNorm2d(planes*4)
         self.conv1 = nn.Conv2d(planes*4, planes*4, kernel_size=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(planes*4)
+        #self.bn2 = nn.BatchNorm2d(planes*4)
         self.conv2 = nn.Conv2d(planes*4, planes*4, kernel_size=1, bias=False)
 
     def forward(self, x):
         out1 = self.res1_2(self.res1_1(self.pool1(x)))
         out2 = self.res2_2(self.res2_1(self.interp1(out1)))
-        out = self.conv1(F.relu(self.bn1(out2)))
-        out = self.conv2(F.relu(self.bn2(out)))
+        #out = self.conv1(F.relu(self.bn1(out2)))
+        #out = self.conv2(F.relu(self.bn2(out)))
+        out = F.relu(self.conv1(out2))
+        out = F.sigmoid(self.conv2(out))
         return out
 
 class attention(nn.Module):
